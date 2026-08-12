@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RTX - Secure Boot 2026 Client Mitigation Health Dashboard</title>
+  <meta name="description" content="RTX eWAN Secure Boot 2026 Certificate Mitigation Health Kiosk Display">
+  <link rel="icon" type="image/svg+xml" href="rtx_logo.svg">
+  <link rel="stylesheet" href="styles.css?v=1.0">
+  <script src="chart.min.js"></script>
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('dashboardTheme');
+        document.documentElement.setAttribute('data-theme', saved || 'dark');
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="page-top-accent"></div>
+
+  <header class="dashboard-header">
+    <div class="header-left">
+      <div style="display:inline-flex;align-items:center;gap:10px;">
+        <img src="rtx_logo.svg" alt="RTX" class="header-logo" style="height:28px;">
+      </div>
+      <div class="header-divider"></div>
+      <div>
+        <div class="header-title">SECURE BOOT 2026 MITIGATION HEALTH</div>
+        <div class="header-subtitle">eWAN Enterprise Kiosk Display <span class="pill pill-blue" style="font-size:0.55rem;padding:1px 6px;margin-left:6px;vertical-align:middle;">v1.0</span></div>
+      </div>
+      <span class="header-badge" id="dataBadge" style="margin: 0 12px; white-space: nowrap; flex-shrink: 0; background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.3); color:var(--teal); padding:2px 10px; border-radius:12px; font-family:'JetBrains Mono',monospace; font-size:0.7rem;">LOADING SITE...</span>
+    </div>
+
+    <div class="header-center">
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <div class="glass-clock" style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:12px; padding:6px 16px; text-align:center;">
+          <span class="clock-date" id="liveDate" style="font-size:0.75rem; color:var(--text-muted); display:block;">--</span>
+          <span class="clock-time" id="liveClock" style="font-family:'JetBrains Mono',monospace; font-size:1.1rem; font-weight:700; color:var(--text-primary);">--:--:-- --</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-right" style="display:flex; align-items:center; gap:16px;">
+      <div class="refresh-info" style="display:flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--text-muted);">
+        <span class="heartbeat-dot" style="width:8px; height:8px; background:var(--green); border-radius:50%; box-shadow:0 0 8px var(--green);"></span>
+        <span>LAST REFRESH: <span id="lastRefresh" style="color:var(--text-primary);">-</span></span>
+      </div>
+
+      <button id="exportBtn" class="pill pill-blue" style="cursor:pointer; background:rgba(0,212,255,0.15); border:1px solid rgba(0,212,255,0.4); color:var(--teal); font-family:'JetBrains Mono',monospace; font-size:0.65rem; font-weight:700; padding:6px 14px; border-radius:16px; transition:all 0.2s;">
+        EXPORT CSV
+      </button>
+
+      <div class="dropdown-container" style="position:relative; display:inline-block;">
+        <button id="settingsBtn" title="Settings" style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:var(--text-secondary);cursor:pointer;transition:all 0.3s ease;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+        <div id="settingsMenu" style="visibility:hidden; display:flex; position:absolute; right:0; top:calc(100% + 12px); background:var(--bg-surface); border:1px solid var(--border-medium); border-radius:12px; padding:10px; flex-direction:column; min-width:220px; box-shadow:0 15px 50px rgba(0,0,0,0.8); backdrop-filter:blur(24px); z-index:999; opacity:0; transform:translateY(-10px); transition: all 0.2s;">
+          <button id="themeToggleBtn" class="settings-item" style="background:transparent; border:none; color:var(--text-primary); padding:8px 12px; cursor:pointer; font-size:0.8rem; text-align:left; border-radius:6px;">Toggle Theme (Dark / Frosty / Light)</button>
+          <button onclick="if(document.fullscreenElement){document.exitFullscreen()}else{document.documentElement.requestFullscreen()}" class="settings-item" style="background:transparent; border:none; color:var(--text-primary); padding:8px 12px; cursor:pointer; font-size:0.8rem; text-align:left; border-radius:6px;">Toggle Fullscreen</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main style="padding: 0 24px 32px 24px; position:relative; z-index:2;">
+
+    <section style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-bottom:24px;">
+      
+      <div style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--border-subtle); border-radius:12px; padding:18px; position:relative; overflow:hidden;">
+        <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">TOTAL MANAGED</div>
+        <div id="metricTotal" style="font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:800; color:var(--text-primary);">0</div>
+        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Discovered Endpoints</div>
+        <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--teal);"></div>
+      </div>
+
+      <div style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--border-subtle); border-radius:12px; padding:18px; position:relative; overflow:hidden;">
+        <div style="font-size:0.65rem; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">COMPLIANT (UPDATED)</div>
+        <div id="metricComplete" style="font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:800; color:var(--green);">0</div>
+        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">UEFICA2023Status = Updated</div>
+        <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--green);"></div>
+      </div>
+
+      <div style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--border-subtle); border-radius:12px; padding:18px; position:relative; overflow:hidden;">
+        <div style="font-size:0.65rem; font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">PILOT CANDIDATES</div>
+        <div id="metricPilot" style="font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:800; color:var(--teal);">0</div>
+        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Ready for Triggering</div>
+        <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--teal);"></div>
+      </div>
+
+      <div style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--border-subtle); border-radius:12px; padding:18px; position:relative; overflow:hidden;">
+        <div style="font-size:0.65rem; font-weight:700; color:var(--amber); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">FIRMWARE HOLD</div>
+        <div id="metricFirmware" style="font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:800; color:var(--amber);">0</div>
+        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Requires OEM BIOS Update</div>
+        <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--amber);"></div>
+      </div>
+
+      <div style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--border-subtle); border-radius:12px; padding:18px; position:relative; overflow:hidden;">
+        <div style="font-size:0.65rem; font-weight:700; color:var(--violet); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">BITLOCKER HOLD</div>
+        <div id="metricBitlocker" style="font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:800; color:var(--violet);">0</div>
+        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Escrow Key Validation</div>
+        <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--violet);"></div>
+      </div>
+
+      <div style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--border-subtle); border-radius:12px; padding:18px; position:relative; overflow:hidden;">
+        <div style="font-size:0.65rem; font-weight:700; color:var(--red); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">OS SERVICING HOLD</div>
+        <div id="metricOS" style="font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:800; color:var(--red);">0</div>
+        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Prerequisite LCU Missing</div>
+        <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--red);"></div>
+      </div>
+
+      <div style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--border-subtle); border-radius:12px; padding:18px; position:relative; overflow:hidden;">
+        <div style="font-size:0.65rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">LEGACY / DISABLED</div>
+        <div id="metricLegacy" style="font-family:'JetBrains Mono',monospace; font-size:2rem; font-weight:800; color:var(--text-muted);">0</div>
+        <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Legacy BIOS / Disabled SB</div>
+        <div style="position:absolute; top:0; right:0; width:4px; height:100%; background:var(--text-muted);"></div>
+      </div>
+
+    </section>
+
+    <section style="display:grid; grid-template-columns: 1fr; gap:24px; margin-bottom:24px;">
+      <div style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--border-subtle); border-radius:12px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border-subtle); padding-bottom:10px;">
+          <span style="font-size:0.85rem; font-weight:700; color:var(--text-primary); letter-spacing:0.5px;">MITIGATION STATUS DISTRIBUTION</span>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:0.65rem; color:var(--teal);">SECURE BOOT 2026 COHORTS</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 240px 1fr; gap:30px; align-items:center;">
+          <div style="height:220px; position:relative;">
+            <canvas id="statusDoughnutChart"></canvas>
+          </div>
+          <div id="progressList" style="display:flex; flex-direction:column; gap:12px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <section style="background:var(--bg-card); backdrop-filter:blur(16px); border:1px solid var(--border-subtle); border-radius:12px; padding:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div style="font-size:0.9rem; font-weight:700; color:var(--text-primary); letter-spacing:0.5px;">MANAGED CLIENT ENDPOINTS</div>
+          <div style="font-size:0.7rem; color:var(--text-muted);">Real-time inventory and posture details</div>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <input type="text" id="searchInput" placeholder="Search by computer, model, OS..." style="background:rgba(0,0,0,0.4); border:1px solid var(--border-medium); border-radius:8px; padding:6px 14px; color:var(--text-primary); font-size:0.75rem; width:260px; outline:none;">
+          <select id="statusFilter" style="background:rgba(0,0,0,0.4); border:1px solid var(--border-medium); border-radius:8px; padding:6px 14px; color:var(--text-primary); font-size:0.75rem; outline:none;">
+            <option value="ALL">All Status Categories</option>
+            <option value="Complete">Complete (Updated)</option>
+            <option value="ReadyForPilotReview">Pilot Candidates</option>
+            <option value="NeedsFirmwareReview">Hold - Firmware Review</option>
+            <option value="NeedsBitLockerReview">Hold - BitLocker Review</option>
+            <option value="NeedsOSReview">Hold - OS Review</option>
+            <option value="SecureBootDisabledOrLegacy">Hold - Disabled / Legacy</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.75rem;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border-medium); background:rgba(0,0,0,0.3); color:var(--text-muted); font-family:'JetBrains Mono',monospace; font-size:0.65rem; text-transform:uppercase;">
+              <th style="padding:10px 14px;">Computer Name</th>
+              <th style="padding:10px 14px;">Status Category</th>
+              <th style="padding:10px 14px;">Hardware Model</th>
+              <th style="padding:10px 14px;">Operating System</th>
+              <th style="padding:10px 14px;">UEFICA2023Status</th>
+              <th style="padding:10px 14px;">Error Hex</th>
+              <th style="padding:10px 14px;">Confidence Level</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    document.getElementById('settingsBtn').addEventListener('click', function(e) {
+      const menu = document.getElementById('settingsMenu');
+      if (menu.style.visibility === 'hidden' || !menu.style.visibility) {
+        menu.style.visibility = 'visible';
+        menu.style.opacity = '1';
+        menu.style.transform = 'translateY(0)';
+      } else {
+        menu.style.visibility = 'hidden';
+        menu.style.opacity = '0';
+        menu.style.transform = 'translateY(-10px)';
+      }
+      e.stopPropagation();
+    });
+    document.addEventListener('click', function() {
+      const menu = document.getElementById('settingsMenu');
+      if (menu) {
+        menu.style.visibility = 'hidden';
+        menu.style.opacity = '0';
+        menu.style.transform = 'translateY(-10px)';
+      }
+    });
+  </script>
+  <script src="dashboard.js?v=1.0"></script>
+</body>
+</html>

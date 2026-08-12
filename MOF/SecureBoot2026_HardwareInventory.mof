@@ -1,0 +1,30 @@
+// ============================================================================
+// Secure Boot 2026 MECM Hardware Inventory Import MOF
+// Environment: eWAN Offline MECM / SCCM
+// Purpose: Import into MECM Client Settings -> Hardware Inventory -> Import
+// ============================================================================
+
+#pragma namespace ("\\\\.\\root\\cimv2")
+
+[SMS_Report(TRUE),
+ SMS_Group_Name("Secure Boot 2026 Discovery"),
+ SMS_Class_ID("EWAN|SecureBoot2026Discovery|1.0")]
+class EWAN_SecureBoot2026Discovery : SMS_Class_Template
+{
+    [SMS_Report(TRUE), key] string ComputerName;
+    [SMS_Report(TRUE)] string CollectionTime;
+    [SMS_Report(TRUE)] string Manufacturer;
+    [SMS_Report(TRUE)] string Model;
+    [SMS_Report(TRUE)] string BIOSVersion;
+    [SMS_Report(TRUE)] string BIOSReleaseDate;
+    [SMS_Report(TRUE)] string OSBuildNumber;
+    [SMS_Report(TRUE)] string SecureBootEnabled;
+    [SMS_Report(TRUE)] string UEFICA2023Status;
+    [SMS_Report(TRUE)] string UEFICA2023ErrorHex;
+    [SMS_Report(TRUE)] string AvailableUpdatesHex;
+    [SMS_Report(TRUE)] string WindowsUEFICA2023Capable;
+    [SMS_Report(TRUE)] string ConfidenceLevel;
+    [SMS_Report(TRUE)] string BitLockerProtectionStatus;
+    [SMS_Report(TRUE)] string LatestSecureBootEventId;
+    [SMS_Report(TRUE)] string StatusCategory;
+};

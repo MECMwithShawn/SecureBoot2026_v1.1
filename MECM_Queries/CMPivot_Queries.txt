@@ -1,0 +1,39 @@
+// ============================================================================
+// MECM CMPivot Queries for Real-Time Secure Boot 2026 Readiness Validation
+// Environment: eWAN Offline MECM Infrastructure
+// Purpose: Run in MECM Console -> CMPivot against targeted collections
+// ============================================================================
+
+// 1. Check Secure Boot AvailableUpdates Registry Value (Trigger State)
+Registry('hklm:\SYSTEM\CurrentControlSet\Control\SecureBoot')
+| where Property == 'AvailableUpdates'
+| project Device, Property, Value
+
+// 2. Check Secure Boot Servicing 2023 Status (Updated, InProgress, NotStarted)
+Registry('hklm:\SYSTEM\CurrentControlSet\Control\SecureBoot\Servicing')
+| where Property in ('UEFICA2023Status','UEFICA2023Error','UEFICA2023ErrorEvent','WindowsUEFICA2023Capable','BucketHash','ConfidenceLevel')
+| project Device, Property, Value
+
+// 3. Find Endpoints Missing Secure Boot Servicing Registry Values
+Device
+| join kind=leftouter (
+    Registry('hklm:\SYSTEM\CurrentControlSet\Control\SecureBoot\Servicing')
+    | where Property == 'UEFICA2023Status'
+) on Device
+| where isnull(Property)
+| project Device
+
+// 4. Query Recent System Event Logs for TPM-WMI Secure Boot Expiration Events (1032, 1795-1808)
+EventLog('System', 30d)
+| where Source contains 'TPM-WMI'
+| where EventID in (1032, 1042, 1043, 1044, 1045, 1795, 1796, 1797, 1798, 1799, 1800, 1801, 1802, 1803, 1808)
+| project Device, EventID, Message, DateTime
+
+// 5. Operating System Build and Architecture Baseline
+OS
+| project Device, Caption, Version, BuildNumber, OSArchitecture
+| order by Caption asc, BuildNumber asc
+
+// 6. Custom WMI Inventory Class Direct Query (if Hardware Inventory is compiled)
+CimInstance('root\cimv2', 'EWAN_SecureBoot2026Discovery')
+| project ComputerName, StatusCategory, UEFICA2023Status, UEFICA2023ErrorHex, SecureBootEnabled, Manufacturer, Model, BIOSVersion
