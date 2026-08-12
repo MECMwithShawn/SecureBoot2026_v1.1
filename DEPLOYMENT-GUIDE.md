@@ -1,6 +1,6 @@
 # RTX Secure Boot 2026 Enterprise Deployment Guide
 
-**Document Version:** 1.0.0  
+**Document Version:** 1.1.0  
 **Target Environment:** Microsoft Endpoint Configuration Manager (MECM / ConfigMgr) & Enterprise Web Dashboard Host  
 **Classification:** UNCLASSIFIED // FOR OFFICIAL USE ONLY  
 
@@ -30,10 +30,10 @@ The solution consists of two primary deployment phases:
 
 ### Step 1.1: Staging the Source Package
 
-Extract or copy the source deployment package to a staging directory on your server (for example, `C:\Temp\SecureBoot2026_v1.0`):
+Extract or copy the source deployment package to a staging directory on your server (for example, `C:\Temp\SecureBoot2026_v1.1`):
 
 ```
-C:\Temp\SecureBoot2026_v1.0\
+C:\Temp\SecureBoot2026_v1.1\
 ├── Setup-SecureBoot2026-MECM.ps1
 ├── Setup-SecureBootDashboard.ps1
 ├── Stop-SecureBootDashboard.ps1
