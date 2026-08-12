@@ -175,12 +175,12 @@ View metrics for:
 
 ---
 
-## 5. Maintenance & Troubleshooting
+## 5. Maintenance, Upgrade & Uninstallation
 
 ### 5.1 Verification Commands
 Validate SQL connectivity and inventory view status:
 ```powershell
-C:\SecureBoot2026\scripts\Test-SecureBootSQL.ps1 -ServerName "localhost" -DatabaseName "CM_RTX"
+C:\SecureBoot2026\scripts\Test-SecureBootSQL.ps1 -ServerName "localhost" -DatabaseName "CM_CHQ"
 ```
 
 ### 5.2 Force Immediate Data Refresh
@@ -189,20 +189,46 @@ Trigger the background data collection task manually:
 Start-ScheduledTask -TaskName "eWAN_SecureBootDashboard_DataCollection"
 ```
 
-### 5.3 Uninstall / Reinstall
-To completely uninstall the web dashboard:
-```powershell
-C:\SecureBoot2026\Stop-SecureBootDashboard.ps1 -RemoveFiles
-```
+### 5.3 In-Place Upgrade (Option A: Upgrading from v1.0 to v1.1)
+To upgrade an existing production deployment (`C:\SecureBoot2026`) in-place without losing configuration or incurring extended downtime:
+
+1. Stage the new release package to a staging directory (e.g. `C:\Temp\SecureBoot2026_v1.1`).
+2. Open an elevated PowerShell prompt and run:
+   ```powershell
+   Set-Location -Path "C:\Temp\SecureBoot2026_v1.1"
+   .\Update-SecureBootDashboard.ps1
+   ```
+3. **What the upgrade script performs:**
+   - Temporarily stops background web listener services.
+   - Performs a **SHA256 hash comparison** across release assets, updating only changed or new files (`Collect-SecureBoot2026Inventory.ps1`, web UI, collector backend).
+   - Automatically synchronizes updated discovery scripts to network package shares (`\\<SERVER>\Software\Microsoft\Secure Boot\Packages\Discovery`).
+   - Restarts background services and triggers data collection.
+
+### 5.4 Complete Removal & Reset (Option B: Clean Removal for Re-Testing)
+To completely rip out the existing deployment for clean environment re-testing:
+
+1. Open an elevated PowerShell prompt and execute:
+   ```powershell
+   Set-Location -Path "C:\Temp\SecureBoot2026_v1.1"
+   .\Stop-SecureBootDashboard.ps1 -RemoveFiles -Force
+   ```
+2. **What the clean removal script performs:**
+   - Stops running dashboard PowerShell web processes (`Start-DashboardWebServer.ps1`, `Collect-SecureBootDashboardData.ps1`).
+   - Unregisters Scheduled Tasks (`eWAN_SecureBootDashboard` and `eWAN_SecureBootDashboard_DataCollection`).
+   - Deletes Windows Firewall rules (`Secure Boot 2026 Dashboard (TCP 8091)`).
+   - Removes HTTP.sys URL ACL reservations (`http://+:8091/`).
+   - Deletes the deployed directory `C:\SecureBoot2026`.
 
 ---
 
 ## 6. Summary Checklist for Admins
 
-- [ ] **Step 1:** Source package staged at `C:\Temp\SecureBoot2026_v1.0`.
-- [ ] **Step 2:** Executed `Setup-SecureBoot2026-MECM.ps1` from `C:\Temp\SecureBoot2026_v1.0`.
+- [ ] **Step 1:** Source package staged at `C:\Temp\SecureBoot2026_v1.1`.
+- [ ] **Step 2:** Executed `Setup-SecureBoot2026-MECM.ps1` from `C:\Temp\SecureBoot2026_v1.1`.
 - [ ] **Step 3:** Imported `SecureBoot2026_HardwareInventory.mof` in Client Settings.
 - [ ] **Step 4:** Deployed Package `Secure Boot 2026 - Discovery Inventory` to `Secure Boot 2026 - Discovery - All Windows Endpoints`.
 - [ ] **Step 5:** Verified SQL `db_datareader` permissions for Dashboard Host machine account.
-- [ ] **Step 6:** Executed `Setup-SecureBootDashboard.ps1` from `C:\Temp\SecureBoot2026_v1.0` (provisions production `C:\SecureBoot2026`).
+- [ ] **Step 6:** Executed `Setup-SecureBootDashboard.ps1` from `C:\Temp\SecureBoot2026_v1.1` (provisions production `C:\SecureBoot2026`).
 - [ ] **Step 7:** Accessed `http://<SERVER_NAME>:8091/` in browser to confirm metrics display.
+- [ ] **Step 8 (Upgrades):** Ran `Update-SecureBootDashboard.ps1` for in-place maintenance.
+- [ ] **Step 9 (Clean Reset):** Ran `Stop-SecureBootDashboard.ps1 -RemoveFiles -Force` for full teardown and fresh re-testing.
